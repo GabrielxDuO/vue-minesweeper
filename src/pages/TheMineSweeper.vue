@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, watchEffect } from "vue";
+import type { CellState } from "@/types";
+
 const WIDTH = 10;
 const HEIGHT = 10;
 const isDev = false;
 let MINES_GENERATED = false;
+
 const DIRECTIONS = [
   [0, 1],
   [0, -1],
@@ -26,15 +29,6 @@ const CLUE_COLORS = [
   "#707070",
 ];
 
-type CellState = {
-  x: number;
-  y: number;
-  isMine: boolean;
-  isOpened?: boolean;
-  isFlagged?: boolean;
-  clue: number;
-};
-
 const board = ref<CellState[][]>(
   Array.from({ length: HEIGHT }, (_, x) =>
     Array.from(
@@ -48,7 +42,8 @@ function generateMines(curr: CellState): void {
   for (const row of board.value) {
     for (const cell of row) {
       if (curr.x == cell.x && curr.y == cell.y) continue;
-      cell.isMine = Math.random() < 0.1;
+
+      cell.isMine = Math.random() < 0.2;
     }
   }
 
@@ -117,21 +112,6 @@ function flagCell(cell: CellState) {
   cell.isFlagged = !cell.isFlagged;
 }
 
-watchEffect(() => {
-  const cellState = board.value.flat();
-  if (cellState.some(cell => cell.isOpened && cell.isMine)) {
-    alert("You lost.");
-    return;
-  }
-  if (
-    cellState.every(cell => cell.isFlagged || cell.isOpened) ||
-    cellState.every(cell => (!cell.isMine && cell.isOpened) || cell.isMine)
-  ) {
-    if (cellState.some(cell => !cell.isMine && !cell.isOpened)) return;
-    alert("You won.");
-  }
-});
-
 function getCellClass(cell: CellState) {
   return {
     opened: cell.isOpened,
@@ -139,6 +119,21 @@ function getCellClass(cell: CellState) {
     flag: !cell.isOpened && cell.isFlagged,
   };
 }
+
+function checkGameState() {
+  const cellState = board.value.flat();
+
+  if (cellState.some(cell => cell.isOpened && cell.isMine)) {
+    alert("You lost.");
+    return;
+  }
+
+  if (cellState.every(cell => cell.isOpened || cell.isMine)) {
+    alert("You won!");
+  }
+}
+
+watchEffect(checkGameState);
 </script>
 
 <template>
