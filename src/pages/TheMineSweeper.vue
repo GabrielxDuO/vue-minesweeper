@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, watchEffect } from "vue";
-const WIDTH = 5;
-const HEIGHT = 5;
+const WIDTH = 10;
+const HEIGHT = 10;
+const isDev = false;
 let BOARD_GENERATED = false;
 const DIRECTIONS = [
   [0, 1],
@@ -13,8 +14,8 @@ const DIRECTIONS = [
   [-1, 1],
   [-1, -1],
 ];
-const NUMBER_COLORS = [
-  undefined,
+const CLUE_COLORS = [
+  "transparent",
   "#0211ef",
   "#3a741c",
   "#d3391b",
@@ -24,7 +25,6 @@ const NUMBER_COLORS = [
   "#000000",
   "#707070",
 ];
-const isDev = ref<boolean>(false);
 
 type CellState = {
   x: number;
@@ -32,26 +32,29 @@ type CellState = {
   isMine?: boolean;
   isOpened?: boolean;
   isFlagged?: boolean;
-  neighborMines?: number;
+  neighborMines: number;
 };
 
 const board = ref<CellState[][]>(
   Array.from({ length: HEIGHT }, (_, x) =>
-    Array.from({ length: WIDTH }, (_, y) => ({ x, y }) as CellState)
+    Array.from(
+      { length: WIDTH },
+      (_, y) => ({ x, y, neighborMines: 0 }) as CellState
+    )
   )
 );
 
-function generateBoard(initialState: CellState): void {
-  board.value.forEach(cells =>
-    cells.forEach(cell => {
+function generateMines(initialState: CellState): void {
+  for (const row of board.value) {
+    for (const cell of row) {
       if (
         Math.abs(initialState.x - cell.x) + Math.abs(initialState.y - cell.y) <=
         1
       )
         cell.isMine = false;
       else cell.isMine = Math.random() < 0.1;
-    })
-  );
+    }
+  }
 }
 
 function calculateNeighborMines() {
@@ -69,7 +72,7 @@ function calculateNeighborMines() {
 function openCell(cell: CellState) {
   if (cell.isOpened || cell.isFlagged) return;
   if (!BOARD_GENERATED) {
-    generateBoard(cell);
+    generateMines(cell);
     BOARD_GENERATED = true;
     calculateNeighborMines();
   }
@@ -78,7 +81,7 @@ function openCell(cell: CellState) {
 }
 
 function openSafeNeighbors(cell: CellState) {
-  if ((cell.neighborMines as number) > 0) return;
+  if (cell.neighborMines > 0) return;
   const neighbors = getNeighbors(cell);
   neighbors.forEach(neighbor => {
     if (neighbor.isOpened || neighbor.isFlagged) return;
@@ -114,6 +117,10 @@ watchEffect(() => {
     alert("You won.");
   }
 });
+
+function getCellClass(cell: CellState) {
+  return { opened: cell.isOpened, mine: cell.isMine };
+}
 </script>
 
 <template>
@@ -127,21 +134,16 @@ watchEffect(() => {
             v-for="(cell, j) in cells"
             :key="j"
             @click="openCell(cell)"
-            :class="{ opened: cell.isOpened }"
-            :style="{ color: NUMBER_COLORS[cell.neighborMines as number] }"
+            :class="getCellClass(cell)"
             @contextmenu.prevent="flagCell(cell)"
           >
-            {{
-              cell.isOpened || isDev
-                ? cell.isMine
-                  ? "💣"
-                  : (cell.neighborMines as number) > 0
-                    ? cell.neighborMines
-                    : ""
-                : cell.isFlagged
-                  ? "🚩"
-                  : ""
-            }}
+            <template v-if="cell.isOpened || isDev">
+              <span v-if="cell.isMine">*</span>
+              <span v-else-if="cell.isFlagged">🚩</span>
+              <span v-else :style="{ color: CLUE_COLORS[cell.neighborMines] }">
+                {{ cell.neighborMines }}
+              </span>
+            </template>
           </button>
         </div>
       </div>
@@ -159,6 +161,7 @@ watchEffect(() => {
     --shadow-color: #7f7f7f;
     --highlight-color: #ffffff;
     --surface-color: #bfbfbf;
+    --danger-color: #e43e1f;
 
     border: 6px solid;
     border-color: var(--highlight-color) var(--shadow-color) var(--shadow-color)
@@ -189,7 +192,9 @@ watchEffect(() => {
           border: 4px solid;
           border-color: var(--highlight-color) var(--shadow-color)
             var(--shadow-color) var(--highlight-color);
-          font-size: 1.2em;
+          font-size: 1em;
+          font-weight: 900;
+          font-family: minesweeper;
 
           &:active {
             background-color: var(--surface-color);
@@ -199,8 +204,27 @@ watchEffect(() => {
           }
 
           &.opened {
-            font-weight: 900;
             border: 2px solid var(--shadow-color);
+
+            &.mine {
+              background-color: var(--danger-color);
+
+              span::after {
+                /* use a white element to fill the transparent highlight */
+                position: absolute;
+                z-index: -1;
+                top: 6px;
+                left: 6px;
+                width: 4px;
+                height: 4px;
+                background-color: #ffffff;
+                content: "";
+              }
+            }
+          }
+
+          span {
+            transform: translate(1px, 1px);
           }
         }
       }
