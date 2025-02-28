@@ -1,7 +1,9 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import TheMineSweeper from "./pages/TheMineSweeper.vue";
+</script>
 
 <template>
-  <h1>Hello World</h1>
+  <TheMineSweeper />
 </template>
 
 <style scoped></style>
