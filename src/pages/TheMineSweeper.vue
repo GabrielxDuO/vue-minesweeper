@@ -240,16 +240,25 @@ function getCellClass(cell: CellState) {
             }
           }
 
-          &.flag > span {
-            /* make the flag two-colored */
-            background-image: linear-gradient(
-              to bottom,
-              var(--danger-color) 50%,
-              /* first half */ #000000 50% /* last half */
-            );
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+          &.flag {
+            &:active {
+              background-color: var(--surface-color);
+              border: 4px solid;
+              border-color: var(--highlight-color) var(--shadow-color)
+                var(--shadow-color) var(--highlight-color);
+            }
+
+            & > span {
+              /* make the flag two-colored */
+              background-image: linear-gradient(
+                to bottom,
+                var(--danger-color) 50%,
+                /* first half */ #000000 50% /* last half */
+              );
+              -webkit-background-clip: text;
+              background-clip: text;
+              color: transparent;
+            }
           }
 
           span {
