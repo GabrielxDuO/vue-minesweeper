@@ -3,7 +3,7 @@ import { ref, watchEffect } from "vue";
 const WIDTH = 10;
 const HEIGHT = 10;
 const isDev = false;
-let BOARD_GENERATED = false;
+let MINES_GENERATED = false;
 const DIRECTIONS = [
   [0, 1],
   [0, -1],
@@ -29,40 +29,39 @@ const CLUE_COLORS = [
 type CellState = {
   x: number;
   y: number;
-  isMine?: boolean;
+  isMine: boolean;
   isOpened?: boolean;
   isFlagged?: boolean;
-  neighborMines: number;
+  clue: number;
 };
 
 const board = ref<CellState[][]>(
   Array.from({ length: HEIGHT }, (_, x) =>
     Array.from(
       { length: WIDTH },
-      (_, y) => ({ x, y, neighborMines: 0 }) as CellState
+      (_, y) => ({ x, y, isMine: false, clue: 0 }) as CellState
     )
   )
 );
 
-function generateMines(initialState: CellState): void {
+function generateMines(curr: CellState): void {
   for (const row of board.value) {
     for (const cell of row) {
-      if (
-        Math.abs(initialState.x - cell.x) + Math.abs(initialState.y - cell.y) <=
-        1
-      )
-        cell.isMine = false;
-      else cell.isMine = Math.random() < 0.1;
+      if (curr.x == cell.x && curr.y == cell.y) continue;
+      cell.isMine = Math.random() < 0.1;
     }
   }
+
+  updateClues();
 }
 
-function calculateNeighborMines() {
-  board.value.forEach(cells =>
-    cells.forEach(cell => {
-      const neighbors = getNeighbors(cell);
-      cell.neighborMines = neighbors.reduce(
-        (count, cell) => count + (cell.isMine ? 1 : 0),
+function updateClues() {
+  board.value.forEach(row =>
+    row.forEach(cell => {
+      if (cell.isMine) return;
+
+      cell.clue = getNeighbors(cell).reduce(
+        (accu, curr) => accu + Number(curr.isMine),
         0
       );
     })
@@ -70,36 +69,51 @@ function calculateNeighborMines() {
 }
 
 function openCell(cell: CellState) {
+  // TODO: what should happen if cells are flagged before the mines are generated?
+  // 1. generate mines immediately after the first cell is flagged
+  // 2. do not generate mines until the first cell is opened
+  // 3. just blow up the whole board
   if (cell.isOpened || cell.isFlagged) return;
-  if (!BOARD_GENERATED) {
+
+  if (!MINES_GENERATED) {
     generateMines(cell);
-    BOARD_GENERATED = true;
-    calculateNeighborMines();
+    MINES_GENERATED = true;
   }
+
   cell.isOpened = true;
   openSafeNeighbors(cell);
 }
 
-function openSafeNeighbors(cell: CellState) {
-  if (cell.neighborMines > 0) return;
-  const neighbors = getNeighbors(cell);
-  neighbors.forEach(neighbor => {
+function openSafeNeighbors(curr: CellState) {
+  if (curr.clue) return;
+
+  getNeighbors(curr).forEach(neighbor => {
     if (neighbor.isOpened || neighbor.isFlagged) return;
-    if (!neighbor.isMine) neighbor.isOpened = true;
+    // `neighbor` will never be a mine (DFS stops when reaching the first cell that clue > 0)
+    neighbor.isOpened = true;
+
     openSafeNeighbors(neighbor);
   });
 }
 
-function getNeighbors(cell: CellState) {
-  return DIRECTIONS.reduce((neighbors, [x, y]) => {
-    const neighbor = board.value?.[cell.x + x]?.[cell.y + y];
-    if (neighbor) neighbors.push(neighbor);
-    return neighbors;
-  }, [] as CellState[]);
+function getNeighbors(curr: CellState): CellState[] {
+  const neighbors: CellState[] = [];
+
+  for (const [dx, dy] of DIRECTIONS) {
+    const x = curr.x + dx;
+    const y = curr.y + dy;
+
+    if (x >= 0 && x < HEIGHT && y >= 0 && y < WIDTH) {
+      neighbors.push(board.value[x][y]);
+    }
+  }
+
+  return neighbors;
 }
 
 function flagCell(cell: CellState) {
   if (cell.isOpened) return;
+
   cell.isFlagged = !cell.isFlagged;
 }
 
@@ -119,7 +133,11 @@ watchEffect(() => {
 });
 
 function getCellClass(cell: CellState) {
-  return { opened: cell.isOpened, mine: cell.isMine };
+  return {
+    opened: cell.isOpened,
+    mine: cell.isOpened && cell.isMine,
+    flag: !cell.isOpened && cell.isFlagged,
+  };
 }
 </script>
 
@@ -137,11 +155,11 @@ function getCellClass(cell: CellState) {
             :class="getCellClass(cell)"
             @contextmenu.prevent="flagCell(cell)"
           >
-            <template v-if="cell.isOpened || isDev">
+            <span v-if="cell.isFlagged">`</span>
+            <template v-else-if="cell.isOpened || isDev">
               <span v-if="cell.isMine">*</span>
-              <span v-else-if="cell.isFlagged">🚩</span>
-              <span v-else :style="{ color: CLUE_COLORS[cell.neighborMines] }">
-                {{ cell.neighborMines }}
+              <span v-else :style="{ color: CLUE_COLORS[cell.clue] }">
+                {{ cell.clue }}
               </span>
             </template>
           </button>
@@ -193,7 +211,6 @@ function getCellClass(cell: CellState) {
           border-color: var(--highlight-color) var(--shadow-color)
             var(--shadow-color) var(--highlight-color);
           font-size: 1em;
-          font-weight: 900;
           font-family: minesweeper;
 
           &:active {
@@ -209,7 +226,7 @@ function getCellClass(cell: CellState) {
             &.mine {
               background-color: var(--danger-color);
 
-              span::after {
+              & > span::after {
                 /* use a white element to fill the transparent highlight */
                 position: absolute;
                 z-index: -1;
@@ -221,6 +238,18 @@ function getCellClass(cell: CellState) {
                 content: "";
               }
             }
+          }
+
+          &.flag > span {
+            /* make the flag two-colored */
+            background-image: linear-gradient(
+              to bottom,
+              var(--danger-color) 50%,
+              /* first half */ #000000 50% /* last half */
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
           }
 
           span {
