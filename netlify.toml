@@ -1,0 +1,6 @@
+[build]
+publish = "dist"
+command = "pnpm run build-only"
+
+[build.environment]
+NODE_VERSION = "22"
