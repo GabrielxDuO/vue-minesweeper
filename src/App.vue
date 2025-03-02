@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import TheMineSweeper from "./pages/TheMineSweeper.vue";
+import TheMinesweeper from "@/pages/TheMinesweeper.vue";
 </script>
 
 <template>
-  <TheMineSweeper />
+  <TheMinesweeper />
 </template>
 
 <style scoped></style>
