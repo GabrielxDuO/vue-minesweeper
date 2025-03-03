@@ -4,13 +4,13 @@ import { ref, type Ref } from "vue";
 
 export class Minesweeper {
   readonly board = ref() as Ref<CellState[][]>;
-  readonly state = ref<GameState>("unstarted");
+  readonly state = ref("unstarted") as Ref<GameState>;
 
   constructor(
     public width: number,
     public height: number
   ) {
-    this.reset();
+    if (!this.loadData()) this.reset();
   }
 
   reset() {
@@ -108,6 +108,8 @@ export class Minesweeper {
   }
 
   checkGameState() {
+    this.saveData();
+
     if (this.state.value !== "playing") return;
 
     const cellState = this.board.value.flat();
@@ -121,5 +123,35 @@ export class Minesweeper {
     if (cellState.every(cell => cell.isOpened || cell.isMine)) {
       this.state.value = "won";
     }
+  }
+
+  saveData() {
+    const data = {
+      board: this.board.value,
+      state: this.state.value,
+      width: this.width,
+      height: this.height,
+    };
+
+    localStorage.setItem("minesweeper-data", JSON.stringify(data));
+  }
+
+  loadData(): boolean {
+    const savedData = localStorage.getItem("minesweeper-data");
+
+    if (!savedData) return false;
+
+    try {
+      const data = JSON.parse(savedData);
+      this.board.value = data.board;
+      this.state.value = data.state;
+      this.width = data.width;
+      this.height = data.height;
+    } catch (e) {
+      console.log("load data error:", e);
+      return false;
+    }
+
+    return true;
   }
 }
