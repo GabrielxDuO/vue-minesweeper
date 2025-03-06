@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { computed, watchEffect } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import MinesweeperCell from "@/components/MinesweeperCell.vue";
 import { colorSchema, Minesweeper, switchColorSchema } from "@/composables";
+import IconLightSchema from "~icons/tabler/sun";
+import IconDarkSchema from "~icons/tabler/moon";
+import IconAutoSchema from "~icons/tabler/device-desktop";
+import IconMoodSmile from "~icons/tabler/mood-smile";
+import IconMoodNerd from "~icons/tabler/mood-nerd";
+import IconMoodSadDizzy from "~icons/tabler/mood-sad-dizzy";
 
 const ms = new Minesweeper(9, 9);
 const board = computed(() => ms.board.value);
@@ -16,7 +22,14 @@ watchEffect(() => {
     <div class="header">
       <div class="counter">000</div>
       <div class="header-controls">
-        <button class="reset" :state @click="ms.reset"></button>
+        <button class="reset" @click="ms.reset">
+          <IconMoodNerd style="color: #2ecc71" v-if="state === 'won'" />
+          <IconMoodSadDizzy
+            style="color: #e74c3c"
+            v-else-if="state === 'lost'"
+          />
+          <IconMoodSmile v-else />
+        </button>
       </div>
       <div class="counter">000</div>
     </div>
@@ -31,9 +44,9 @@ watchEffect(() => {
       </div>
       <div class="right-group">
         <button class="theme-toggle" @click="switchColorSchema">
-          <span v-if="colorSchema === 'light'">☀️</span>
-          <span v-else-if="colorSchema === 'dark'">🌙</span>
-          <span v-else>🌈</span>
+          <IconLightSchema v-if="colorSchema === 'light'" />
+          <IconDarkSchema v-else-if="colorSchema === 'dark'" />
+          <IconAutoSchema v-else />
         </button>
       </div>
     </div>
@@ -123,22 +136,6 @@ watchEffect(() => {
         &:active {
           transform: scale(0.95);
           box-shadow: 0 1px 3px var(--color-shadow);
-
-          &::after {
-            content: "😮";
-          }
-        }
-
-        &::after {
-          content: "😊";
-        }
-
-        &[state="won"]::after {
-          content: "😎";
-        }
-
-        &[state="lost"]::after {
-          content: "😵";
         }
       }
     }
@@ -184,6 +181,7 @@ watchEffect(() => {
     .right-group {
       display: flex;
       justify-content: flex-end;
+      margin-left: 16px;
 
       .theme-toggle {
         aspect-ratio: 1;

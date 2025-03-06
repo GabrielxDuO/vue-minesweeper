@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import type { CellState } from "@/types";
-import { isDev } from "@/composables";
-import { CLUE_COLORS } from "@/constants";
+import { isDev, type CellState } from "@/composables";
+import IconMine from "~icons/mdi/mine";
+import IconExplode from "~icons/fluent-emoji-high-contrast/collision";
+import IconFlag from "~icons/tabler/pennant-2-filled";
 
 defineProps<{ cell: CellState }>();
 
@@ -22,13 +23,18 @@ function getCellClass(cell: CellState) {
 
 <template>
   <button class="cell" :class="getCellClass(cell)">
-    <span
-      v-if="(cell.isRevealed && cell.clue > 0) || isDev"
-      class="clue"
-      :style="{ color: `var(--color-num-${cell.clue})` }"
-    >
-      {{ cell.clue }}
-    </span>
+    <template v-if="cell.isRevealed || isDev">
+      <IconExplode v-if="cell.isExploded" style="color: #ffff00" />
+      <IconMine v-else-if="cell.isMine" style="color: #34495e" />
+      <span
+        v-else-if="cell.clue > 0"
+        class="clue"
+        :style="{ color: `var(--color-num-${cell.clue})` }"
+      >
+        {{ cell.clue }}
+      </span>
+    </template>
+    <IconFlag v-else-if="cell.isFlagged" style="color: #e74c3c" />
   </button>
 </template>
 
@@ -40,7 +46,7 @@ function getCellClass(cell: CellState) {
   justify-content: center;
   align-items: center;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   user-select: none;
   border-width: 1px;
   border-style: solid;
@@ -64,17 +70,13 @@ function getCellClass(cell: CellState) {
     &:active {
       transform: scale(0.93);
     }
-
-    &.flagged::after {
-      content: "🚩";
-      font-size: 1rem;
-    }
   }
 
   &.revealed {
     background-color: var(--cell-color-bg-revealed);
     border-radius: 4px;
     border-color: var(--color-border);
+    font-size: 1.2rem;
   }
 
   &.question::after {
@@ -87,18 +89,9 @@ function getCellClass(cell: CellState) {
     background-color: var(--mine-color-bg);
     border-color: var(--mine-color-border);
 
-    &::after {
-      content: "💣";
-      font-size: 1rem;
-    }
-
     &.exploded {
       background-color: var(--mine-color-bg-exploded);
       border-color: var(--mine-color-border-exploded);
-
-      &::after {
-        content: "💥";
-      }
     }
   }
 }

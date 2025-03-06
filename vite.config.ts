@@ -4,10 +4,17 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueDevTools from "vite-plugin-vue-devtools";
 import postcssPresetEnv from "postcss-preset-env";
+import Icons from "unplugin-icons/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), vueDevTools()],
+  plugins: [
+    vue(),
+    vueDevTools(),
+    Icons({
+      autoInstall: true,
+    }),
+  ],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
@@ -17,6 +24,6 @@ export default defineConfig({
     postcss: {
       plugins: [postcssPresetEnv],
     },
-    devSourcemap: true,
+    devSourcemap: false,
   },
 });
