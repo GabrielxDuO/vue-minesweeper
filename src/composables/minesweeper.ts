@@ -1,6 +1,17 @@
 import { DIRECTIONS } from "@/constants";
-import type { CellState, GameState } from "@/types";
 import { ref, type Ref } from "vue";
+
+export type CellState = {
+  x: number;
+  y: number;
+  isMine: boolean;
+  isRevealed?: boolean;
+  isFlagged?: boolean;
+  isExploded?: boolean;
+  clue: number;
+};
+
+export type GameState = "unstarted" | "playing" | "won" | "lost";
 
 export class Minesweeper {
   readonly board = ref() as Ref<CellState[][]>;
@@ -73,10 +84,13 @@ export class Minesweeper {
     // 1. generate mines immediately after the first cell is flagged
     // 2. do not generate mines until the first cell is opened
     // 3. just blow up the whole board
-    if (cell.isOpened || cell.isFlagged) return;
+    if (cell.isRevealed || cell.isFlagged) return;
 
-    cell.isOpened = true;
-    if (cell.isMine) return;
+    cell.isRevealed = true;
+    if (cell.isMine) {
+      cell.isExploded = true;
+      return;
+    }
     this.openSafeNeighbors(cell);
   }
 
@@ -84,9 +98,9 @@ export class Minesweeper {
     if (cell.clue) return;
 
     this.getNeighbors(cell).forEach(neighbor => {
-      if (neighbor.isOpened || neighbor.isFlagged) return;
+      if (neighbor.isRevealed || neighbor.isFlagged) return;
       // `neighbor` will never be a mine (DFS stops when reaching the first cell that clue > 0)
-      neighbor.isOpened = true;
+      neighbor.isRevealed = true;
 
       this.openSafeNeighbors(neighbor);
     });
@@ -94,7 +108,7 @@ export class Minesweeper {
 
   flagCell(cell: CellState) {
     if (this.state.value !== "playing") return;
-    if (cell.isOpened) return;
+    if (cell.isRevealed) return;
 
     cell.isFlagged = !cell.isFlagged;
   }
@@ -114,13 +128,13 @@ export class Minesweeper {
 
     const cellState = this.board.value.flat();
 
-    if (cellState.some(cell => cell.isOpened && cell.isMine)) {
+    if (cellState.some(cell => cell.isRevealed && cell.isMine)) {
       this.state.value = "lost";
       this.revealAllMines();
       return;
     }
 
-    if (cellState.every(cell => cell.isOpened || cell.isMine)) {
+    if (cellState.every(cell => cell.isRevealed || cell.isMine)) {
       this.state.value = "won";
     }
   }
