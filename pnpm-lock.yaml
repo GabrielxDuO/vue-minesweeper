@@ -15,9 +15,6 @@ importers:
         specifier: ^3.5.13
         version: 3.5.13(typescript@5.7.3)
     devDependencies:
-      '@iconify-json/fluent':
-        specifier: ^1.2.15
-        version: 1.2.15
       '@iconify-json/fluent-emoji-high-contrast':
         specifier: ^1.2.3
         version: 1.2.3
@@ -619,9 +616,6 @@ packages:
 
   '@iconify-json/fluent-emoji-high-contrast@1.2.3':
     resolution: {integrity: sha512-quHd+KLY3I1gZHiQj2qH2djt8RQaj+DrBpNdJ/b7Cweiu6m3/h/ZR/KMXSGNGmPKMgPlGgH2MlIpO8CgZdsBAg==}
-
-  '@iconify-json/fluent@1.2.15':
-    resolution: {integrity: sha512-Xxbq0c7y+nGim6zgv+ZRh9MAAEsjXAYqUOvAZnwcTdXTdplGleLVM1d/xAuAje9CKFdbQN6zlfcfqJ26X39MPA==}
 
   '@iconify-json/mdi@1.2.3':
     resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
@@ -2165,10 +2159,6 @@ snapshots:
     optional: true
 
   '@iconify-json/fluent-emoji-high-contrast@1.2.3':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/fluent@1.2.15':
     dependencies:
       '@iconify/types': 2.0.0
 
