@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { isDev, type CellState } from "@/composables";
 import IconMine from "~icons/mdi/mine";
-import IconExplode from "~icons/fluent-emoji-high-contrast/collision";
+import IconExploded from "~icons/fluent-emoji-high-contrast/collision";
 import IconFlag from "~icons/tabler/pennant-2-filled";
 
 defineProps<{ cell: CellState }>();
@@ -24,17 +24,23 @@ function getCellClass(cell: CellState) {
 <template>
   <button class="cell" :class="getCellClass(cell)">
     <template v-if="cell.isRevealed || isDev">
-      <IconExplode v-if="cell.isExploded" style="color: #ffff00" />
-      <IconMine v-else-if="cell.isMine" style="color: #34495e" />
+      <IconExploded
+        v-if="cell.isExploded"
+        style="color: var(--icon-color-exploded)"
+      />
+      <IconMine v-else-if="cell.isMine" style="color: var(--icon-color-mine)" />
       <span
         v-else-if="cell.clue > 0"
         class="clue"
-        :style="{ color: `var(--color-num-${cell.clue})` }"
+        :style="{ color: `var(--cell-color-num-${cell.clue})` }"
       >
         {{ cell.clue }}
       </span>
     </template>
-    <IconFlag v-else-if="cell.isFlagged" style="color: #e74c3c" />
+    <IconFlag
+      v-else-if="cell.isFlagged"
+      style="color: var(--icon-color-flag)"
+    />
   </button>
 </template>
 

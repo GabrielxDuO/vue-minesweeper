@@ -25,9 +25,12 @@ watchEffect(() => {
       <div class="counter">{{ ms.restMines.toString().padStart(3, "0") }}</div>
       <div class="header-controls">
         <button class="reset" @click="ms.reset">
-          <IconMoodWon style="color: #2ecc71" v-if="ms.status === 'won'" />
+          <IconMoodWon
+            style="color: var(--icon-color-mood-won)"
+            v-if="ms.status === 'won'"
+          />
           <IconMoodLost
-            style="color: #e74c3c"
+            style="color: var(--icon-color-mood-lost)"
             v-else-if="ms.status === 'lost'"
           />
           <IconMoodNormal v-else />
