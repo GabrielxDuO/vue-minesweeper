@@ -10,7 +10,7 @@ import IconMoodWon from "~icons/tabler/mood-nerd";
 import IconMoodLost from "~icons/tabler/mood-sad-dizzy";
 import { useLocalStorage, useNow } from "@/composables/liteUse";
 
-const ms = new Minesweeper(9, 9, 20);
+const ms = new Minesweeper(9, 9, 10);
 
 useLocalStorage("minesweeper-state", ms.state);
 
@@ -30,9 +30,11 @@ watchEffect(() => {
 
 <template>
   <div class="panel">
-    <div class="header">
-      <div class="counter">{{ ms.restMines }}</div>
-      <div class="header-controls">
+    <div class="header unshakeable-center">
+      <div class="left-group">
+        <div class="counter">{{ ms.restMines }}</div>
+      </div>
+      <div class="center-group header-controls">
         <button class="reset" @click="ms.reset">
           <IconMoodWon
             style="color: var(--icon-color-mood-won)"
@@ -45,10 +47,12 @@ watchEffect(() => {
           <IconMoodNormal v-else />
         </button>
       </div>
-      <div class="counter">{{ timer }}</div>
+      <div class="right-group">
+        <div class="counter">{{ timer }}</div>
+      </div>
     </div>
 
-    <div class="controls">
+    <div class="controls unshakeable-center">
       <div class="left-group"></div>
       <div class="center-group">
         <button class="difficulty-button active">初级</button>
@@ -82,6 +86,24 @@ watchEffect(() => {
 </template>
 
 <style scoped>
+.unshakeable-center {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+
+  .left-group {
+    display: flex;
+  }
+
+  .center-group {
+    display: flex;
+  }
+
+  .right-group {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+}
+
 .panel {
   display: flex;
   flex-direction: column;
@@ -95,9 +117,6 @@ watchEffect(() => {
   transition: all 0.3s ease;
 
   .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     column-gap: 12px;
     padding: 16px;
     background-color: var(--color-primary);
@@ -121,7 +140,6 @@ watchEffect(() => {
     }
 
     .header-controls {
-      display: flex;
       align-items: center;
 
       .reset {
@@ -156,15 +174,13 @@ watchEffect(() => {
   }
 
   .controls {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    column-gap: 16px;
     padding: 16px;
     width: 100%;
     background-color: var(--color-primary-brighter);
     transition: background-color 0.3s ease;
 
     .center-group {
-      display: flex;
       justify-content: center;
       gap: 10px;
 
@@ -192,37 +208,31 @@ watchEffect(() => {
       }
     }
 
-    .right-group {
+    .theme-toggle {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background-color: var(--color-button-bg);
+      border: none;
+      cursor: pointer;
       display: flex;
-      justify-content: flex-end;
-      margin-left: 16px;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2rem;
+      box-shadow: 0 2px 5px var(--color-shadow);
+      transition:
+        all 0.2s ease,
+        background-color 0.3s ease,
+        color 0.3s ease;
+      color: var(--color-button-text);
 
-      .theme-toggle {
-        aspect-ratio: 1;
-        border-radius: 50%;
-        background-color: var(--color-button-bg);
-        border: none;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 1.2rem;
-        box-shadow: 0 2px 5px var(--color-shadow);
-        transition:
-          all 0.2s ease,
-          background-color 0.3s ease,
-          color 0.3s ease;
-        color: var(--color-button-text);
+      &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 3px 8px var(--color-shadow);
+      }
 
-        &:hover {
-          transform: scale(1.05);
-          box-shadow: 0 3px 8px var(--color-shadow);
-        }
-
-        &:active {
-          transform: scale(0.95);
-          box-shadow: 0 1px 3px var(--color-shadow);
-        }
+      &:active {
+        transform: scale(0.95);
+        box-shadow: 0 1px 3px var(--color-shadow);
       }
     }
   }
