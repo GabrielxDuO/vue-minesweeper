@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watchEffect } from "vue";
+import { computed, watchEffect } from "vue";
 import MinesweeperCell from "@/components/MinesweeperCell.vue";
 import { colorSchema, Minesweeper, switchColorSchema } from "@/composables";
 import IconLightSchema from "~icons/tabler/sun";
@@ -8,11 +8,20 @@ import IconAutoSchema from "~icons/tabler/device-desktop";
 import IconMoodNormal from "~icons/tabler/mood-smile";
 import IconMoodWon from "~icons/tabler/mood-nerd";
 import IconMoodLost from "~icons/tabler/mood-sad-dizzy";
-import { useLocalStorage } from "@/composables/liteUse";
+import { useLocalStorage, useNow } from "@/composables/liteUse";
 
 const ms = new Minesweeper(9, 9, 20);
 
 useLocalStorage("minesweeper-state", ms.state);
+
+const now = useNow();
+const timer = computed(() => {
+  if (ms.status === "ready") return 0;
+  else if (ms.status === "playing")
+    return Math.floor((+now.value - ms.state.value.startMS!) / 1000);
+  else
+    return Math.floor((ms.state.value.endMS! - ms.state.value.startMS!) / 1000);
+});
 
 watchEffect(() => {
   ms.checkGameState();
@@ -36,7 +45,7 @@ watchEffect(() => {
           <IconMoodNormal v-else />
         </button>
       </div>
-      <div class="counter">000</div>
+      <div class="counter">{{ timer }}</div>
     </div>
 
     <div class="controls">

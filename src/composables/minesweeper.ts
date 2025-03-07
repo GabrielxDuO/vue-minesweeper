@@ -17,6 +17,8 @@ export type GameStatus = "ready" | "playing" | "won" | "lost";
 export type GameState = {
   board: CellState[][];
   status: GameStatus;
+  startMS?: number;
+  endMS?: number;
 };
 
 export class Minesweeper {
@@ -114,6 +116,7 @@ export class Minesweeper {
     if (this.status === "ready") {
       this.generateMines(cell);
       this.status = "playing";
+      this.state.value.startMS = Date.now();
     }
 
     if (this.status !== "playing") return;
@@ -163,11 +166,10 @@ export class Minesweeper {
     if (this.cells.some(c => c.isRevealed && c.isMine)) {
       this.status = "lost";
       this.revealAllMines();
-      return;
-    }
-
-    if (this.cells.every(c => c.isRevealed || c.isMine)) {
+      this.state.value.endMS = Date.now();
+    } else if (this.cells.every(c => c.isRevealed || c.isMine)) {
       this.status = "won";
+      this.state.value.endMS = Date.now();
     }
   }
 }
