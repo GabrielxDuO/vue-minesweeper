@@ -1,10 +1,11 @@
 import { DIRECTIONS } from "@/constants";
+import { randomInt } from "@/utils";
 import { ref, type Ref } from "vue";
 
 export type CellState = {
   x: number;
   y: number;
-  isMine?: boolean;
+  isMine: boolean;
   isRevealed?: boolean;
   isFlagged?: boolean;
   isExploded?: boolean;
@@ -29,6 +30,13 @@ export class Minesweeper {
     return this.state.value.status;
   }
 
+  get restMines() {
+    return this.status !== "playing"
+      ? this.mines
+      : this.mines -
+          this.cells.reduce((sum, c) => sum + (c.isFlagged ? 1 : 0), 0);
+  }
+
   private set status(v) {
     this.state.value.status = v;
   }
@@ -39,7 +47,8 @@ export class Minesweeper {
 
   constructor(
     public width: number,
-    public height: number
+    public height: number,
+    public mines: number
   ) {
     this.reset();
   }
@@ -49,7 +58,7 @@ export class Minesweeper {
       board: Array.from({ length: this.height }, (_, x) =>
         Array.from(
           { length: this.width },
-          (_, y) => ({ x, y, clue: 0 }) as CellState
+          (_, y) => ({ x, y, clue: 0, isMine: false }) as CellState
         )
       ),
       status: "ready",
@@ -57,13 +66,23 @@ export class Minesweeper {
   }
 
   generateMines(cell: CellState) {
-    this.cells.forEach(c => {
-      if (cell.x == c.x && cell.y == c.y) {
-        c.isMine = false;
-        return;
-      }
+    const randomPlaceMine = () => {
+      const x = randomInt(0, this.height);
+      const y = randomInt(0, this.width);
 
-      c.isMine = Math.random() < 0.2;
+      if (this.board[x][y].isMine) return false;
+      if (
+        (cell.x === x && Math.abs(cell.y - y) <= 1) ||
+        (cell.y === y && Math.abs(cell.x - x) <= 1)
+      )
+        return false;
+
+      this.board[x][y].isMine = true;
+      return true;
+    };
+
+    Array.from({ length: this.mines }).forEach(() => {
+      for (let placed = false; !placed; placed = randomPlaceMine());
     });
 
     this.updateClues();
@@ -139,7 +158,6 @@ export class Minesweeper {
   }
 
   checkGameState() {
-    // this.saveData();
     if (this.status !== "playing") return;
 
     if (this.cells.some(c => c.isRevealed && c.isMine)) {
@@ -151,32 +169,5 @@ export class Minesweeper {
     if (this.cells.every(c => c.isRevealed || c.isMine)) {
       this.status = "won";
     }
-  }
-
-  saveData() {
-    // const data = {
-    //   board: this.board.value,
-    //   state: this.state.value,
-    //   width: this.width,
-    //   height: this.height,
-    // };
-    // localStorage.setItem("minesweeper-data", JSON.stringify(data));
-  }
-
-  loadData(): boolean {
-    // const savedData = localStorage.getItem("minesweeper-data");
-    // if (!savedData) return false;
-    // try {
-    //   const data = JSON.parse(savedData);
-    //   this.board.value = data.board;
-    //   this.state.value = data.state;
-    //   this.width = data.width;
-    //   this.height = data.height;
-    // } catch (e) {
-    //   console.log("load data error:", e);
-    //   return false;
-    // }
-    // return true;
-    return true;
   }
 }

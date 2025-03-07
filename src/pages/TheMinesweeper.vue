@@ -5,12 +5,12 @@ import { colorSchema, Minesweeper, switchColorSchema } from "@/composables";
 import IconLightSchema from "~icons/tabler/sun";
 import IconDarkSchema from "~icons/tabler/moon";
 import IconAutoSchema from "~icons/tabler/device-desktop";
-import IconMoodSmile from "~icons/tabler/mood-smile";
-import IconMoodNerd from "~icons/tabler/mood-nerd";
-import IconMoodSadDizzy from "~icons/tabler/mood-sad-dizzy";
+import IconMoodNormal from "~icons/tabler/mood-smile";
+import IconMoodWon from "~icons/tabler/mood-nerd";
+import IconMoodLost from "~icons/tabler/mood-sad-dizzy";
 import { useLocalStorage } from "@/composables/liteUse";
 
-const ms = new Minesweeper(9, 9);
+const ms = new Minesweeper(9, 9, 10);
 
 useLocalStorage("minesweeper-state", ms.state);
 
@@ -22,15 +22,15 @@ watchEffect(() => {
 <template>
   <div class="panel">
     <div class="header">
-      <div class="counter">000</div>
+      <div class="counter">{{ ms.restMines.toString().padStart(3, "0") }}</div>
       <div class="header-controls">
         <button class="reset" @click="ms.reset">
-          <IconMoodNerd style="color: #2ecc71" v-if="ms.status === 'won'" />
-          <IconMoodSadDizzy
+          <IconMoodWon style="color: #2ecc71" v-if="ms.status === 'won'" />
+          <IconMoodLost
             style="color: #e74c3c"
             v-else-if="ms.status === 'lost'"
           />
-          <IconMoodSmile v-else />
+          <IconMoodNormal v-else />
         </button>
       </div>
       <div class="counter">000</div>
