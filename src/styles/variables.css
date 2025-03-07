@@ -32,8 +32,6 @@
   --cell-color-num-7: #4b5563;
   --cell-color-num-8: #64748b;
 
-  --icon-color-mood-normal: #ffd700;
-  --icon-color-mood-pressed: #3498db;
   --icon-color-mood-won: #2ecc71;
   --icon-color-mood-lost: #e74c3c;
 
@@ -76,14 +74,12 @@
     --cell-color-num-7: #d1d5db;
     --cell-color-num-8: #cbd5e1;
 
-    --icon-color-mood-normal: #ffc107;
-    --icon-color-mood-pressed: #64b5f6;
     --icon-color-mood-won: #66bb6a;
     --icon-color-mood-lost: #ef5350;
 
     --icon-color-flag: #ff7043;
     --icon-color-question: #4fc3f7;
-    --icon-color-mine: #90a4ae;
+    --icon-color-mine: #b0bec5;
     --icon-color-exploded: #ffee58;
   }
 

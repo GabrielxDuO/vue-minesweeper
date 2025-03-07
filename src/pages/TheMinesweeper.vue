@@ -10,7 +10,7 @@ import IconMoodWon from "~icons/tabler/mood-nerd";
 import IconMoodLost from "~icons/tabler/mood-sad-dizzy";
 import { useLocalStorage } from "@/composables/liteUse";
 
-const ms = new Minesweeper(9, 9, 10);
+const ms = new Minesweeper(9, 9, 20);
 
 useLocalStorage("minesweeper-state", ms.state);
 
@@ -22,7 +22,7 @@ watchEffect(() => {
 <template>
   <div class="panel">
     <div class="header">
-      <div class="counter">{{ ms.restMines.toString().padStart(3, "0") }}</div>
+      <div class="counter">{{ ms.restMines }}</div>
       <div class="header-controls">
         <button class="reset" @click="ms.reset">
           <IconMoodWon
