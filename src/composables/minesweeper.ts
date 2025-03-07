@@ -33,10 +33,18 @@ export class Minesweeper {
   }
 
   get restMines() {
-    return this.status !== "playing"
-      ? this.mines
-      : this.mines -
-          this.cells.reduce((sum, c) => sum + (c.isFlagged ? 1 : 0), 0);
+    switch (this.status) {
+      case "playing":
+      case "lost":
+        return (
+          this.mines -
+          this.cells.reduce((sum, c) => sum + (c.isFlagged ? 1 : 0), 0)
+        );
+      case "won":
+        return 0;
+      default:
+        return this.mines;
+    }
   }
 
   private set status(v) {
