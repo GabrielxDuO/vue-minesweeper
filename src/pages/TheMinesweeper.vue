@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
+import { watchEffect } from "vue";
 import MinesweeperCell from "@/components/MinesweeperCell.vue";
 import { colorSchema, Minesweeper, switchColorSchema } from "@/composables";
 import IconLightSchema from "~icons/tabler/sun";
@@ -8,10 +8,12 @@ import IconAutoSchema from "~icons/tabler/device-desktop";
 import IconMoodSmile from "~icons/tabler/mood-smile";
 import IconMoodNerd from "~icons/tabler/mood-nerd";
 import IconMoodSadDizzy from "~icons/tabler/mood-sad-dizzy";
+import { useLocalStorage } from "@/composables/liteUse";
 
 const ms = new Minesweeper(9, 9);
-const board = computed(() => ms.board.value);
-const state = computed(() => ms.state.value);
+
+useLocalStorage("minesweeper-state", ms.state);
+
 watchEffect(() => {
   ms.checkGameState();
 });
@@ -23,10 +25,10 @@ watchEffect(() => {
       <div class="counter">000</div>
       <div class="header-controls">
         <button class="reset" @click="ms.reset">
-          <IconMoodNerd style="color: #2ecc71" v-if="state === 'won'" />
+          <IconMoodNerd style="color: #2ecc71" v-if="ms.status === 'won'" />
           <IconMoodSadDizzy
             style="color: #e74c3c"
-            v-else-if="state === 'lost'"
+            v-else-if="ms.status === 'lost'"
           />
           <IconMoodSmile v-else />
         </button>
@@ -53,7 +55,7 @@ watchEffect(() => {
 
     <div class="board-container">
       <div class="board">
-        <template class="row" v-for="(cells, i) in board" :key="i">
+        <template class="row" v-for="(cells, i) in ms.board" :key="i">
           <MinesweeperCell
             v-for="(cell, j) in cells"
             :key="i * ms.width + j"
