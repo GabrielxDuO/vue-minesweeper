@@ -1,4 +1,3 @@
-import { DIRECTIONS } from "@/constants";
 import { randomInt } from "@/utils";
 import { ref, type Ref } from "vue";
 
@@ -12,9 +11,41 @@ export type CellState = {
   clue: number;
 };
 
+const DIRECTIONS: [x: number, y: number][] = [
+  [0, 1],
+  [0, -1],
+  [1, 0],
+  [-1, 0],
+  [1, 1],
+  [1, -1],
+  [-1, 1],
+  [-1, -1],
+] as const;
+
+export type GameDifficulty = "beginner" | "intermediate" | "expert" | "custom";
+
+export type GameSettings = {
+  width: number;
+  height: number;
+  mines: number;
+};
+
+export const DIFFICULTY_PRESETS: Record<
+  Exclude<GameDifficulty, "custom">,
+  GameSettings
+> = {
+  beginner: { width: 9, height: 9, mines: 10 },
+  intermediate: { width: 16, height: 16, mines: 40 },
+  expert: { width: 30, height: 16, mines: 99 },
+} as const;
+
 export type GameStatus = "ready" | "playing" | "won" | "lost";
 
 export type GameState = {
+  width: number;
+  height: number;
+  mines: number;
+  difficulty: GameDifficulty;
   board: CellState[][];
   status: GameStatus;
   startMS?: number;
@@ -22,7 +53,23 @@ export type GameState = {
 };
 
 export class Minesweeper {
-  readonly state = ref() as Ref<GameState>;
+  state = ref() as Ref<GameState>;
+
+  get width() {
+    return this.state.value.width;
+  }
+
+  get height() {
+    return this.state.value.height;
+  }
+
+  get mines() {
+    return this.state.value.mines;
+  }
+
+  get difficulty() {
+    return this.state.value.difficulty;
+  }
 
   get board() {
     return this.state.value.board;
@@ -55,19 +102,26 @@ export class Minesweeper {
     return this.state.value.board.flat();
   }
 
-  constructor(
-    public width: number,
-    public height: number,
-    public mines: number
-  ) {
-    this.reset();
+  constructor(width: number, height: number, mines: number) {
+    this.reset("custom", { width, height, mines });
   }
 
-  reset() {
+  reset(difficulty: GameDifficulty, settings?: GameSettings) {
+    if (difficulty === "custom" && !settings) {
+      throw new Error("settings are required for custom difficulty");
+    }
+
+    const { width, height, mines } =
+      difficulty === "custom" ? settings! : DIFFICULTY_PRESETS[difficulty];
+
     this.state.value = {
-      board: Array.from({ length: this.height }, (_, x) =>
+      width,
+      height,
+      mines,
+      difficulty,
+      board: Array.from({ length: height }, (_, x) =>
         Array.from(
-          { length: this.width },
+          { length: width },
           (_, y) => ({ x, y, clue: 0, isMine: false }) as CellState
         )
       ),

@@ -35,7 +35,16 @@ watchEffect(() => {
         <div class="counter">{{ ms.restMines }}</div>
       </div>
       <div class="center-group header-controls">
-        <button class="reset" @click="ms.reset">
+        <button
+          class="reset"
+          @click="
+            ms.reset(ms.difficulty, {
+              width: ms.width,
+              height: ms.height,
+              mines: ms.mines,
+            })
+          "
+        >
           <IconMoodWon
             style="color: var(--icon-color-mood-won)"
             v-if="ms.status === 'won'"
@@ -55,10 +64,33 @@ watchEffect(() => {
     <div class="controls unshakeable-center">
       <div class="left-group"></div>
       <div class="center-group">
-        <button class="difficulty-button active">初级</button>
-        <button class="difficulty-button">中级</button>
-        <button class="difficulty-button">高级</button>
-        <button class="difficulty-button">自定义</button>
+        <button
+          class="difficulty-button"
+          :class="{ active: ms.difficulty === 'beginner' }"
+          @click="ms.reset('beginner')"
+        >
+          初级
+        </button>
+        <button
+          class="difficulty-button"
+          :class="{ active: ms.difficulty === 'intermediate' }"
+          @click="ms.reset('intermediate')"
+        >
+          中级
+        </button>
+        <button
+          class="difficulty-button"
+          :class="{ active: ms.difficulty === 'expert' }"
+          @click="ms.reset('expert')"
+        >
+          高级
+        </button>
+        <!-- <button
+          class="difficulty-button"
+          :class="{ active: ms.difficulty === 'custom' }"
+        >
+          自定义
+        </button> -->
       </div>
       <div class="right-group">
         <button class="theme-toggle" @click="switchColorSchema">
@@ -110,6 +142,7 @@ watchEffect(() => {
   align-items: center;
   width: max-content;
   max-width: 100%;
+  max-height: 100%;
   overflow: hidden;
   background-color: var(--panel-color-bg);
   border-radius: 12px;
@@ -241,6 +274,7 @@ watchEffect(() => {
     padding: 20px;
     background-color: var(--color-secondary);
     width: 100%;
+    overflow: auto;
     display: flex;
     justify-content: center;
     flex-grow: 1;
