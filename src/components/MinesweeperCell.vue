@@ -49,8 +49,6 @@ function getCellClass(cell: CellState) {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: var(--cell-size);
-  height: var(--cell-size);
   border-width: 1px;
   border-style: solid;
   font-size: 1.4rem;

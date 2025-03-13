@@ -10,9 +10,11 @@
   --color-button-bg: white;
   --color-button-text: var(--color-text);
 
-  --panel-color-bg: white;
   --counter-color-bg: rgba(0, 0, 0, 0.2);
   --counter-color-text: white;
+
+  --input-color-bg: white;
+  --input-color-border: #cbd5e1;
 
   --cell-color-bg: #e2e8f0;
   --cell-color-bg-revealed: #f8fafc;
@@ -54,9 +56,11 @@
     --color-button-bg: var(--color-secondary);
     --color-button-text: var(--color-text);
 
-    --panel-color-bg: #0f172a;
     --counter-color-bg: rgba(0, 0, 0, 0.4);
     --counter-color-text: #e2e8f0;
+
+    --input-color-bg: #1e293b;
+    --input-color-border: ##475569;
 
     --cell-color-bg: #475569;
     --cell-color-bg-revealed: #1e293b;

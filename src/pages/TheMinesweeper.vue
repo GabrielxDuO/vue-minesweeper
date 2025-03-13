@@ -1,7 +1,23 @@
 <script setup lang="ts">
-import { computed, watchEffect } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  useTemplateRef,
+  watchEffect,
+  type Reactive,
+  type Ref,
+} from "vue";
 import MinesweeperCell from "@/components/MinesweeperCell.vue";
-import { colorSchema, Minesweeper, switchColorSchema } from "@/composables";
+import {
+  colorSchema,
+  Minesweeper,
+  switchColorSchema,
+  type GameSettings,
+} from "@/composables";
 import IconLightSchema from "~icons/tabler/sun";
 import IconDarkSchema from "~icons/tabler/moon";
 import IconAutoSchema from "~icons/tabler/device-desktop";
@@ -9,6 +25,7 @@ import IconMoodNormal from "~icons/tabler/mood-smile";
 import IconMoodWon from "~icons/tabler/mood-nerd";
 import IconMoodLost from "~icons/tabler/mood-sad-dizzy";
 import { useLocalStorage, useNow } from "@/composables/liteUse";
+import { randomInt } from "@/utils";
 
 const ms = new Minesweeper(9, 9, 10);
 
@@ -33,17 +50,50 @@ function onResetGame() {
     height: ms.height,
     mines: ms.mines,
   });
-  // For layout testing
-  // ms.reset("custom", {
-  //   width: 3,
-  //   height: 3,
-  //   mines: 1,
-  // });
+}
+
+const activeCustomSettings = ref(false);
+const customSettings = reactive({
+  width: ms.width,
+  height: ms.height,
+  mines: ms.mines,
+}) as Reactive<GameSettings>;
+
+function onCustomizingSettings() {
+  activeCustomSettings.value = true;
+  customSettings.width = ms.width;
+  customSettings.height = ms.height;
+  customSettings.mines = ms.mines;
+}
+
+function onCustomizedSettings() {
+  validCustomSettings();
+  ms.reset("custom", customSettings);
+  activeCustomSettings.value = false;
+}
+
+function validCustomSettings() {
+  if (customSettings.width < 3 || customSettings.width > 100) {
+    customSettings.width = randomInt(3, 100);
+  }
+  if (customSettings.height < 3 || customSettings.height > 100) {
+    customSettings.height = randomInt(3, 100);
+  }
+
+  if (
+    customSettings.mines < 1 ||
+    customSettings.mines > customSettings.width * customSettings.height - 1
+  ) {
+    customSettings.mines = randomInt(
+      1,
+      customSettings.width * customSettings.height
+    );
+  }
 }
 </script>
 
 <template>
-  <div class="panel">
+  <div class="panel" ref="panel">
     <div class="header unshakeable-center">
       <div class="left-group">
         <div class="counter">{{ ms.restMines }}</div>
@@ -70,32 +120,33 @@ function onResetGame() {
       <div class="left-group"></div>
       <div class="center-group">
         <button
-          class="difficulty-button"
+          class="control-button"
           :class="{ active: ms.difficulty === 'beginner' }"
           @click="ms.reset('beginner')"
         >
           初级
         </button>
         <button
-          class="difficulty-button"
+          class="control-button"
           :class="{ active: ms.difficulty === 'intermediate' }"
           @click="ms.reset('intermediate')"
         >
           中级
         </button>
         <button
-          class="difficulty-button"
+          class="control-button"
           :class="{ active: ms.difficulty === 'expert' }"
           @click="ms.reset('expert')"
         >
           高级
         </button>
-        <!-- <button
-          class="difficulty-button"
+        <button
+          class="control-button"
           :class="{ active: ms.difficulty === 'custom' }"
+          @click="onCustomizingSettings"
         >
           自定义
-        </button> -->
+        </button>
       </div>
       <div class="right-group">
         <button class="theme-toggle" @click="switchColorSchema">
@@ -103,6 +154,54 @@ function onResetGame() {
           <IconDarkSchema v-else-if="colorSchema === 'dark'" />
           <IconAutoSchema v-else />
         </button>
+      </div>
+      <div class="custom-settings" :class="{ active: activeCustomSettings }">
+        <form id="custom-form" class="custom-settings-form">
+          <div class="custom-form-group">
+            <label for="width">宽度（3〜100）：</label>
+            <input
+              type="number"
+              id="width"
+              v-model="customSettings.width"
+              required
+            />
+          </div>
+          <div class="custom-form-group">
+            <label for="height">高度（3〜100）：</label>
+            <input
+              type="number"
+              id="height"
+              v-model="customSettings.height"
+              required
+            />
+          </div>
+          <div class="custom-form-group">
+            <label for="mines">地雷数量：</label>
+            <input
+              type="number"
+              id="mines"
+              min="1"
+              v-model="customSettings.mines"
+              required
+            />
+          </div>
+          <div class="custom-form-actions">
+            <button
+              type="button"
+              class="control-button"
+              @click.prevent="activeCustomSettings = false"
+            >
+              取消
+            </button>
+            <button
+              type="submit"
+              class="control-button"
+              @click.prevent="onCustomizedSettings"
+            >
+              确定
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -129,7 +228,7 @@ function onResetGame() {
   align-items: center;
   overflow: hidden;
   border-radius: 12px;
-  background-color: var(--panel-color-bg);
+  background-color: var(--color-secondary);
   box-shadow: 0 10px 25px var(--color-shadow);
   transition: all 0.3s ease;
 
@@ -202,32 +301,32 @@ function onResetGame() {
     .center-group {
       justify-content: center;
       column-gap: 10px;
+    }
 
-      .difficulty-button {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 36px;
-        border: none;
-        border-radius: 4px;
-        padding: 0 16px;
-        background-color: var(--color-button-bg);
-        color: var(--color-button-text);
-        font-weight: 500;
-        cursor: pointer;
-        transition:
-          all 0.2s ease,
-          background-color 0.3s ease,
-          color 0.3s ease;
+    .control-button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 36px;
+      border: none;
+      border-radius: 4px;
+      padding: 0 16px;
+      background-color: var(--color-button-bg);
+      color: var(--color-button-text);
+      font-weight: 500;
+      cursor: pointer;
+      transition:
+        all 0.2s ease,
+        background-color 0.3s ease,
+        color 0.3s ease;
 
-        &:hover {
-          background-color: var(--cell-color-bg-hover);
-        }
+      &:hover {
+        background-color: var(--cell-color-bg-hover);
+      }
 
-        &.active {
-          background-color: var(--color-primary-dimmer);
-          color: var(--counter-color-text);
-        }
+      &.active {
+        background-color: var(--color-primary-dimmer);
+        color: var(--counter-color-text);
       }
     }
 
@@ -259,12 +358,77 @@ function onResetGame() {
         box-shadow: 0 1px 3px var(--color-shadow);
       }
     }
+
+    .custom-settings {
+      grid-column: 1 / -1;
+      margin-top: 0;
+      width: 100%;
+      max-height: 0;
+      border-radius: 6px;
+      background-color: var(--color-primary-dimmer);
+      overflow: hidden;
+      transition:
+        max-height 0.3s ease-in-out,
+        margin-top 0.3s ease-in-out;
+
+      &.active {
+        margin-top: 15px;
+        max-height: 300px;
+      }
+
+      .custom-settings-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin: 15px;
+      }
+
+      .custom-form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .custom-form-group label {
+        margin-bottom: 2px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--counter-color-text);
+      }
+
+      .custom-form-group input {
+        height: 34px;
+        padding: 0 8px;
+        border-radius: 4px;
+        border: 1px solid var(--input-color-border);
+        background-color: var(--input-color-bg);
+        color: var(--text);
+      }
+
+      .custom-form-group input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px var(--color-primary-brighter);
+      }
+
+      .custom-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-end;
+        gap: 10px;
+
+        .control-button {
+          height: 34px;
+        }
+      }
+    }
   }
 
   .board-container {
     display: flex;
     justify-content: center;
+    align-items: center;
     width: 100%;
+    height: 100%;
     padding: 20px;
     overflow: auto;
     background-color: var(--color-secondary);
