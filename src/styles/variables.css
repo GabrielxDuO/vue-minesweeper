@@ -41,6 +41,8 @@
   --icon-color-exploded: #ffff00;
 
   &.dark {
+    color-scheme: dark;
+
     --color-bg: #1e293b;
     --color-primary: #334a6d;
     --color-primary-brighter: #3e5a85;

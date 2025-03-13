@@ -46,16 +46,16 @@ function getCellClass(cell: CellState) {
 
 <style scoped>
 .cell {
-  width: var(--cell-size);
-  height: var(--cell-size);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: bold;
-  font-size: 1.4rem;
-  user-select: none;
+  width: var(--cell-size);
+  height: var(--cell-size);
   border-width: 1px;
   border-style: solid;
+  font-size: 1.4rem;
+  font-weight: bold;
+  user-select: none;
   transition:
     all 0.15s ease,
     background-color 0.3s ease,
@@ -63,9 +63,9 @@ function getCellClass(cell: CellState) {
     border 0.3s ease;
 
   &.covered {
-    background-color: var(--cell-color-bg);
     border-radius: 4px;
     border-color: var(--color-border);
+    background-color: var(--cell-color-bg);
     cursor: pointer;
 
     &:hover {
@@ -79,25 +79,25 @@ function getCellClass(cell: CellState) {
   }
 
   &.revealed {
-    background-color: var(--cell-color-bg-revealed);
     border-radius: 4px;
     border-color: var(--color-border);
+    background-color: var(--cell-color-bg-revealed);
     font-size: 1.2rem;
   }
 
   &.question::after {
     content: "?";
-    color: var(--color-primary);
     font-size: 1.3rem;
+    color: var(--color-primary);
   }
 
   &.mine {
-    background-color: var(--mine-color-bg);
     border-color: var(--mine-color-border);
+    background-color: var(--mine-color-bg);
 
     &.exploded {
-      background-color: var(--mine-color-bg-exploded);
       border-color: var(--mine-color-border-exploded);
+      background-color: var(--mine-color-bg-exploded);
     }
   }
 }

@@ -52,6 +52,7 @@ export type GameState = {
   endMS?: number;
 };
 
+// TODO: refactor to composable
 export class Minesweeper {
   state = ref() as Ref<GameState>;
 

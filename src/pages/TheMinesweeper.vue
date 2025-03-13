@@ -26,6 +26,20 @@ const timer = computed(() => {
 watchEffect(() => {
   ms.checkGameState();
 });
+
+function onResetGame() {
+  ms.reset(ms.difficulty, {
+    width: ms.width,
+    height: ms.height,
+    mines: ms.mines,
+  });
+  // For layout testing
+  // ms.reset("custom", {
+  //   width: 3,
+  //   height: 3,
+  //   mines: 1,
+  // });
+}
 </script>
 
 <template>
@@ -35,16 +49,7 @@ watchEffect(() => {
         <div class="counter">{{ ms.restMines }}</div>
       </div>
       <div class="center-group header-controls">
-        <button
-          class="reset"
-          @click="
-            ms.reset(ms.difficulty, {
-              width: ms.width,
-              height: ms.height,
-              mines: ms.mines,
-            })
-          "
-        >
+        <button class="reset" @click="onResetGame()">
           <IconMoodWon
             style="color: var(--icon-color-mood-won)"
             v-if="ms.status === 'won'"
@@ -118,54 +123,35 @@ watchEffect(() => {
 </template>
 
 <style scoped>
-.unshakeable-center {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-
-  .left-group {
-    display: flex;
-  }
-
-  .center-group {
-    display: flex;
-  }
-
-  .right-group {
-    display: flex;
-    flex-direction: row-reverse;
-  }
-}
-
 .panel {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: max-content;
-  max-width: 100%;
-  max-height: 100%;
   overflow: hidden;
-  background-color: var(--panel-color-bg);
   border-radius: 12px;
+  background-color: var(--panel-color-bg);
   box-shadow: 0 10px 25px var(--color-shadow);
   transition: all 0.3s ease;
 
   .header {
     column-gap: 12px;
+    width: 100%;
     padding: 16px;
     background-color: var(--color-primary);
-    color: var(--counter-color-text);
-    width: 100%;
     transition: background-color 0.3s ease;
 
     .counter {
-      background-color: var(--counter-color-bg);
-      padding: 8px 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 70px;
+      height: 44px;
       border-radius: 6px;
+      padding: 0 12px;
+      background-color: var(--counter-color-bg);
       font-family: monospace;
       font-size: 1.2rem;
       font-weight: bold;
-      min-width: 70px;
-      text-align: center;
       color: var(--counter-color-text);
       transition:
         background-color 0.3s ease,
@@ -176,22 +162,22 @@ watchEffect(() => {
       align-items: center;
 
       .reset {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: var(--color-button-bg);
-        border: none;
-        cursor: pointer;
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 1.5rem;
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 50%;
+        background-color: var(--color-button-bg);
         box-shadow: 0 2px 5px var(--color-shadow);
+        font-size: 1.5rem;
+        color: var(--color-button-text);
+        cursor: pointer;
         transition:
           all 0.2s ease,
           background-color 0.3s ease,
           color 0.3s ease;
-        color: var(--color-button-text);
 
         &:hover {
           transform: scale(1.05);
@@ -215,16 +201,20 @@ watchEffect(() => {
 
     .center-group {
       justify-content: center;
-      gap: 10px;
+      column-gap: 10px;
 
       .difficulty-button {
-        padding: 8px 16px;
-        background-color: var(--color-button-bg);
-        color: var(--color-button-text);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 36px;
         border: none;
         border-radius: 4px;
-        cursor: pointer;
+        padding: 0 16px;
+        background-color: var(--color-button-bg);
+        color: var(--color-button-text);
         font-weight: 500;
+        cursor: pointer;
         transition:
           all 0.2s ease,
           background-color 0.3s ease,
@@ -242,21 +232,22 @@ watchEffect(() => {
     }
 
     .theme-toggle {
-      aspect-ratio: 1;
-      border-radius: 50%;
-      background-color: var(--color-button-bg);
-      border: none;
-      cursor: pointer;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1.2rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background-color: var(--color-button-bg);
+      font-size: 1rem;
+      color: var(--color-button-text);
       box-shadow: 0 2px 5px var(--color-shadow);
+      cursor: pointer;
       transition:
         all 0.2s ease,
         background-color 0.3s ease,
         color 0.3s ease;
-      color: var(--color-button-text);
 
       &:hover {
         transform: scale(1.05);
@@ -271,13 +262,12 @@ watchEffect(() => {
   }
 
   .board-container {
-    padding: 20px;
-    background-color: var(--color-secondary);
-    width: 100%;
-    overflow: auto;
     display: flex;
     justify-content: center;
-    flex-grow: 1;
+    width: 100%;
+    padding: 20px;
+    overflow: auto;
+    background-color: var(--color-secondary);
     transition: background-color 0.3s ease;
 
     .board {

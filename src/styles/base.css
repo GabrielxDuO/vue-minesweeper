@@ -1,0 +1,17 @@
+.unshakeable-center {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+
+  .left-group {
+    display: flex;
+  }
+
+  .center-group {
+    display: flex;
+  }
+
+  .right-group {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+}
