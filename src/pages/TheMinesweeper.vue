@@ -245,14 +245,15 @@ watchEffect(shouldFullScreenEffect);
     </div>
 
     <div class="board-container">
-      <div class="board">
+      <div class="board" @contextmenu.prevent>
         <template class="row" v-for="(cells, i) in ms.board" :key="i">
           <MinesweeperCell
             v-for="(cell, j) in cells"
             :key="i * ms.width + j"
             :cell
-            @click="ms.openCell(cell)"
-            @contextmenu.prevent="ms.flagCell(cell)"
+            @open="ms.openCell(cell)"
+            @flag="ms.flagCell(cell)"
+            @chording="ms.chording(cell)"
           />
         </template>
       </div>
@@ -269,7 +270,7 @@ watchEffect(shouldFullScreenEffect);
   border-radius: 12px;
   background-color: var(--color-secondary);
   box-shadow: 0 10px 25px var(--color-shadow);
-  transition: all 0.3s ease;
+  transition: all 0.3s ease-in-out;
 
   &.fullscreen {
     width: 100%;

@@ -165,13 +165,13 @@ export class Minesweeper {
   }
 
   getNeighbors(cell: CellState): CellState[] {
-    return DIRECTIONS.reduce((neighbors, [dx, dy]) => {
+    return DIRECTIONS.reduce((c, [dx, dy]) => {
       const x = cell.x + dx;
       const y = cell.y + dy;
       if (x >= 0 && x < this.height && y >= 0 && y < this.width) {
-        neighbors.push(this.board[x][y]);
+        c.push(this.board[x][y]);
       }
-      return neighbors;
+      return c;
     }, [] as CellState[]);
   }
 
@@ -198,13 +198,13 @@ export class Minesweeper {
   openSafeNeighbors(cell: CellState) {
     if (cell.clue) return;
 
-    this.getNeighbors(cell).forEach(neighbor => {
-      if (neighbor.isRevealed || neighbor.isFlagged) return;
+    this.getNeighbors(cell).forEach(c => {
+      if (c.isRevealed || c.isFlagged) return;
 
       // `neighbor` will never be a mine (DFS stops when reaching the first cell that clue > 0)
-      neighbor.isRevealed = true;
+      c.isRevealed = true;
 
-      this.openSafeNeighbors(neighbor);
+      this.openSafeNeighbors(c);
     });
   }
 
@@ -213,6 +213,21 @@ export class Minesweeper {
     if (cell.isRevealed) return;
 
     cell.isFlagged = !cell.isFlagged;
+  }
+
+  chording(cell: CellState) {
+    if (this.status !== "playing") return;
+    if (!cell.isRevealed || cell.isFlagged) return;
+    const neighbors = this.getNeighbors(cell);
+
+    // If neighbor flagged === neighbor mines => valid
+    const flags = neighbors.reduce((acc, c) => acc + (c.isFlagged ? 1 : 0), 0);
+    if (flags === cell.clue)
+      neighbors
+        .filter(c => !c.isRevealed)
+        .forEach(c => {
+          this.openCell(c);
+        });
   }
 
   revealAllMines() {

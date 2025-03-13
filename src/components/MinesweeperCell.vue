@@ -6,6 +6,12 @@ import IconFlag from "~icons/tabler/pennant-2-filled";
 
 defineProps<{ cell: CellState }>();
 
+const emit = defineEmits<{
+  open: [cell: CellState];
+  flag: [cell: CellState];
+  chording: [cell: CellState];
+}>();
+
 function getCellClass(cell: CellState) {
   if (!cell.isRevealed)
     return {
@@ -19,10 +25,21 @@ function getCellClass(cell: CellState) {
     };
   return "revealed";
 }
+
+function onMouseDown(cell: CellState, e: MouseEvent) {
+  if (e.buttons === (1 | 2)) emit("chording", cell);
+}
 </script>
 
 <template>
-  <button class="cell" :class="getCellClass(cell)">
+  <button
+    class="cell"
+    :class="getCellClass(cell)"
+    @click="emit('open', cell)"
+    @contextmenu.prevent="emit('flag', cell)"
+    @dblclick="emit('chording', cell)"
+    @mousedown="onMouseDown(cell, $event)"
+  >
     <template v-if="cell.isRevealed || isDev">
       <IconExploded
         v-if="cell.isExploded"
