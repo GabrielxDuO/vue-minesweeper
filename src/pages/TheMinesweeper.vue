@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import {
   computed,
-  nextTick,
-  onBeforeUnmount,
   onMounted,
+  onUnmounted,
   reactive,
   ref,
   useTemplateRef,
   watchEffect,
   type Reactive,
-  type Ref,
 } from "vue";
 import MinesweeperCell from "@/components/MinesweeperCell.vue";
 import {
@@ -73,13 +71,13 @@ function onCustomizedSettings() {
 }
 
 function validCustomSettings() {
+  // Provide a random try when receiving invalid values XD
   if (customSettings.width < 3 || customSettings.width > 100) {
     customSettings.width = randomInt(3, 100);
   }
   if (customSettings.height < 3 || customSettings.height > 100) {
     customSettings.height = randomInt(3, 100);
   }
-
   if (
     customSettings.mines < 1 ||
     customSettings.mines > customSettings.width * customSettings.height - 1
@@ -90,11 +88,52 @@ function validCustomSettings() {
     );
   }
 }
+
+const cellSize = 40;
+const cellSizePx = computed(() => cellSize + "px");
+const fullscreen = ref(false);
+const panelHeader = useTemplateRef("panelHeader");
+const panelControls = useTemplateRef("panelControls");
+const windowWidth = ref(window.innerWidth);
+const windowHeight = ref(window.innerHeight);
+
+function onResize() {
+  windowWidth.value = window.innerWidth;
+  windowHeight.value = window.innerHeight;
+}
+
+onMounted(() => {
+  window.addEventListener("resize", onResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", onResize);
+});
+
+function shouldFullScreenEffect() {
+  // Proximate calculation
+  const boardWidth = (ms.width + 2) /* Gap size */ * cellSize;
+  const boardHeight = (ms.height + 2) /* Gap size */ * cellSize;
+  const controlsHeight =
+    (panelHeader.value?.getBoundingClientRect().height || 0) +
+    (panelControls.value?.getBoundingClientRect().height || 0);
+
+  if (
+    boardWidth > windowWidth.value * 0.9 ||
+    boardHeight + controlsHeight > windowHeight.value * 0.9
+  ) {
+    fullscreen.value = true;
+  } else {
+    fullscreen.value = false;
+  }
+}
+
+watchEffect(shouldFullScreenEffect);
 </script>
 
 <template>
-  <div class="panel" ref="panel">
-    <div class="header unshakeable-center">
+  <div class="panel" :class="{ fullscreen }">
+    <div class="header unshakeable-center" ref="panelHeader">
       <div class="left-group">
         <div class="counter">{{ ms.restMines }}</div>
       </div>
@@ -116,7 +155,7 @@ function validCustomSettings() {
       </div>
     </div>
 
-    <div class="controls unshakeable-center">
+    <div class="controls unshakeable-center" ref="panelControls">
       <div class="left-group"></div>
       <div class="center-group">
         <button
@@ -231,6 +270,12 @@ function validCustomSettings() {
   background-color: var(--color-secondary);
   box-shadow: 0 10px 25px var(--color-shadow);
   transition: all 0.3s ease;
+
+  &.fullscreen {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
 
   .header {
     column-gap: 12px;
@@ -424,9 +469,8 @@ function validCustomSettings() {
   }
 
   .board-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: grid;
+    place-items: center;
     width: 100%;
     height: 100%;
     padding: 20px;
@@ -436,8 +480,8 @@ function validCustomSettings() {
 
     .board {
       display: grid;
-      grid-template-columns: repeat(v-bind("ms.width"), var(--cell-size));
-      grid-template-rows: repeat(v-bind("ms.height"), var(--cell-size));
+      grid-template-columns: repeat(v-bind("ms.width"), v-bind("cellSizePx"));
+      grid-template-rows: repeat(v-bind("ms.height"), v-bind("cellSizePx"));
       gap: 2px;
     }
   }
