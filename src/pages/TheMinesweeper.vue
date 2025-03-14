@@ -15,6 +15,7 @@ import {
   Minesweeper,
   switchColorSchema,
   type GameSettings,
+  type GameState,
 } from "@/composables";
 import IconLightSchema from "~icons/tabler/sun";
 import IconDarkSchema from "~icons/tabler/moon";
@@ -23,11 +24,22 @@ import IconMoodNormal from "~icons/tabler/mood-smile";
 import IconMoodWon from "~icons/tabler/mood-nerd";
 import IconMoodLost from "~icons/tabler/mood-sad-dizzy";
 import { useLocalStorage, useNow } from "@/composables/liteUse";
-import { randomInt } from "@/utils";
+import { randomInt, version } from "@/utils";
 
 const ms = new Minesweeper(9, 9, 10);
 
-useLocalStorage("minesweeper-state", ms.state);
+const currentVersion = useLocalStorage("minesweeper-version", {
+  defaultValue: version,
+});
+let replaceStateOnInit = false;
+if (currentVersion.value !== version) {
+  currentVersion.value = version;
+  replaceStateOnInit = true;
+}
+useLocalStorage("minesweeper-state", {
+  defaultValue: ms.state,
+  replaceOnInit: replaceStateOnInit,
+});
 
 const now = useNow();
 const timer = computed(() => {

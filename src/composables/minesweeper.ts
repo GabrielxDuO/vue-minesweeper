@@ -215,6 +215,8 @@ export class Minesweeper {
     cell.isFlagged = !cell.isFlagged;
   }
 
+  // This operation may still trigger unrevealed mines when the count of neighboring mines matches the clue number but the actual mine positions are not correctly flagged.
+  // Players should acknowledge that this is not a bug, but a feature
   chording(cell: CellState) {
     if (this.status !== "playing") return;
     if (!cell.isRevealed || cell.isFlagged) return;

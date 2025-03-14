@@ -1,10 +1,20 @@
 import { ref, watch, type Ref } from "vue";
 
-export function useLocalStorage<T>(key: string, defaultValue: T | Ref<T>) {
+export type UseLocalStorageOptions<T> = {
+  defaultValue: T | Ref<T>;
+  replaceOnInit?: boolean;
+};
+
+export function useLocalStorage<T>(
+  key: string,
+  options: UseLocalStorageOptions<T>
+) {
+  const { defaultValue, replaceOnInit = false } = options;
+
   const data = ref(defaultValue);
 
   const rawValue = localStorage.getItem(key);
-  if (rawValue !== null) {
+  if (rawValue !== null && !replaceOnInit) {
     const value = JSON.parse(rawValue);
     data.value = value;
   } else {
