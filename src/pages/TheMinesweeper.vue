@@ -15,7 +15,6 @@ import {
   Minesweeper,
   switchColorSchema,
   type GameSettings,
-  type GameState,
 } from "@/composables";
 import IconLightSchema from "~icons/tabler/sun";
 import IconDarkSchema from "~icons/tabler/moon";
@@ -141,6 +140,8 @@ function shouldFullScreenEffect() {
 }
 
 watchEffect(shouldFullScreenEffect);
+
+// TODO: Provide play guide & operation instructions somewhere
 </script>
 
 <template>

@@ -25,20 +25,17 @@ function getCellClass(cell: CellState) {
     };
   return "revealed";
 }
-
-function onMouseDown(cell: CellState, e: MouseEvent) {
-  if (e.buttons === (1 | 2)) emit("chording", cell);
-}
 </script>
 
 <template>
   <button
     class="cell"
     :class="getCellClass(cell)"
-    @click="emit('open', cell)"
-    @contextmenu.prevent="emit('flag', cell)"
+    @click.left="emit('open', cell)"
+    @click.right="emit('flag', cell)"
     @dblclick="emit('chording', cell)"
-    @mousedown="onMouseDown(cell, $event)"
+    @click.left.right="emit('chording', cell)"
+    @click.middle="emit('chording', cell)"
   >
     <template v-if="cell.isRevealed || isDev">
       <IconExploded
