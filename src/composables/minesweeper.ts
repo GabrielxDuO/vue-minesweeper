@@ -240,6 +240,14 @@ export class Minesweeper {
       });
   }
 
+  flagAllMines() {
+    this.cells
+      .filter(c => c.isMine)
+      .forEach(c => {
+        c.isFlagged = true;
+      });
+  }
+
   checkGameState() {
     if (this.status !== "playing") return;
 
@@ -249,6 +257,7 @@ export class Minesweeper {
       this.state.value.endMS = Date.now();
     } else if (this.cells.every(c => c.isRevealed || c.isMine)) {
       this.status = "won";
+      this.flagAllMines();
       this.state.value.endMS = Date.now();
     }
   }

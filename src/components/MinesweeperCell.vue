@@ -3,6 +3,7 @@ import { isDev, type CellState } from "@/composables";
 import IconMine from "~icons/mdi/mine";
 import IconExploded from "~icons/fluent-emoji-high-contrast/collision";
 import IconFlag from "~icons/tabler/pennant-2-filled";
+import { vOnLongPress } from "@/directives/v-on-long-press";
 
 defineProps<{ cell: CellState }>();
 
@@ -33,6 +34,7 @@ function getCellClass(cell: CellState) {
     :class="getCellClass(cell)"
     @click.left="emit('open', cell)"
     @click.right="emit('flag', cell)"
+    v-on-long-press.400="() => void emit('flag', cell)"
     @dblclick="emit('chording', cell)"
     @click.left.right="emit('chording', cell)"
     @click.middle="emit('chording', cell)"
