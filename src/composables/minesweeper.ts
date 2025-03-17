@@ -132,8 +132,8 @@ export class Minesweeper {
 
   generateMines(cell: CellState) {
     const randomPlaceMine = () => {
-      const x = randomInt(0, this.height);
-      const y = randomInt(0, this.width);
+      const x = randomInt(0, this.height - 1);
+      const y = randomInt(0, this.width - 1);
 
       if (this.board[x][y].isMine) return false;
       if (

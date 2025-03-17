@@ -24,7 +24,14 @@ import IconMoodWon from "~icons/tabler/mood-nerd";
 import IconMoodLost from "~icons/tabler/mood-sad-dizzy";
 
 import { useLocalStorage, useNow } from "@/composables/liteUse";
-import { randomInt, version } from "@/utils";
+import { toValidNumberInRange, version } from "@/utils";
+import {
+  MAX_BOARD_HEIGHT,
+  MAX_BOARD_WIDTH,
+  MIN_BOARD_HEIGHT,
+  MIN_BOARD_WIDTH,
+  MIN_MINES,
+} from "@/constants";
 
 const ms = new Minesweeper(9, 9, 10);
 
@@ -77,7 +84,6 @@ function onCustomizingSettings() {
 }
 
 function onCustomizedSettings() {
-  validCustomSettings();
   ms.reset("custom", customSettings);
   activeCustomSettings.value = false;
 }
@@ -86,20 +92,28 @@ const maxValidMines = computed(
   () => (customSettings.width || 3) * (customSettings.height || 3) - 1
 );
 
-function validCustomSettings() {
-  // Provide a random try when receiving invalid values XD
-  if (customSettings.width < 3 || customSettings.width > 100) {
-    customSettings.width = randomInt(3, 100);
-  }
-  if (customSettings.height < 3 || customSettings.height > 100) {
-    customSettings.height = randomInt(3, 100);
-  }
-  if (customSettings.mines < 1 || customSettings.mines > maxValidMines.value) {
-    customSettings.mines = randomInt(
-      1,
-      customSettings.width * customSettings.height
-    );
-  }
+function onCustomWidthChange(event: Event) {
+  customSettings.width = toValidNumberInRange(
+    (event.target as HTMLInputElement).value,
+    MIN_BOARD_WIDTH,
+    MAX_BOARD_WIDTH
+  );
+}
+
+function onCustomHeightChange(event: Event) {
+  customSettings.height = toValidNumberInRange(
+    (event.target as HTMLInputElement).value,
+    MIN_BOARD_HEIGHT,
+    MAX_BOARD_HEIGHT
+  );
+}
+
+function onCustomMinesChange(event: Event) {
+  customSettings.mines = toValidNumberInRange(
+    (event.target as HTMLInputElement).value,
+    MIN_MINES,
+    maxValidMines.value
+  );
 }
 
 const cellSize = 40;
@@ -225,9 +239,10 @@ watchEffect(shouldFullScreenEffect);
             <input
               type="number"
               id="custom-settings-width"
-              placeholder="3 ~ 100"
               required
-              v-model.number.lazy="customSettings.width"
+              :placeholder="`${MIN_BOARD_WIDTH} ~ ${MAX_BOARD_WIDTH}`"
+              :value="customSettings.width"
+              @change="onCustomWidthChange"
             />
           </div>
           <div class="custom-form-group">
@@ -235,9 +250,10 @@ watchEffect(shouldFullScreenEffect);
             <input
               type="number"
               id="custom-settings-height"
-              placeholder="3 ~ 100"
               required
-              v-model.number.lazy="customSettings.height"
+              :placeholder="`${MIN_BOARD_HEIGHT} ~ ${MAX_BOARD_HEIGHT}`"
+              :value="customSettings.height"
+              @change="onCustomHeightChange"
             />
           </div>
           <div class="custom-form-group">
@@ -245,10 +261,10 @@ watchEffect(shouldFullScreenEffect);
             <input
               type="number"
               id="mines"
-              min="1"
-              :placeholder="`1 ~ ${maxValidMines}`"
-              v-model.number.lazy="customSettings.mines"
               required
+              :placeholder="`${MIN_MINES} ~ ${maxValidMines}`"
+              :value="customSettings.mines"
+              @change="onCustomMinesChange"
             />
           </div>
           <div class="custom-form-actions">
@@ -267,6 +283,7 @@ watchEffect(shouldFullScreenEffect);
               确定
             </button>
           </div>
+          <div class="tip">提示：当输入值无效时，会在合法范围内随机</div>
         </form>
       </div>
     </div>
@@ -506,6 +523,15 @@ watchEffect(shouldFullScreenEffect);
           .control-button {
             height: 34px;
           }
+        }
+
+        .tip {
+          grid-column: 1 / -1;
+          font-size: 0.8rem;
+          color: var(--counter-color-text);
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
         }
       }
     }
