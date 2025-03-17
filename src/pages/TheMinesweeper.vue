@@ -22,6 +22,7 @@ import IconAutoSchema from "~icons/tabler/device-desktop";
 import IconMoodNormal from "~icons/tabler/mood-smile";
 import IconMoodWon from "~icons/tabler/mood-nerd";
 import IconMoodLost from "~icons/tabler/mood-sad-dizzy";
+
 import { useLocalStorage, useNow } from "@/composables/liteUse";
 import { randomInt, version } from "@/utils";
 
@@ -81,6 +82,10 @@ function onCustomizedSettings() {
   activeCustomSettings.value = false;
 }
 
+const maxValidMines = computed(
+  () => (customSettings.width || 3) * (customSettings.height || 3) - 1
+);
+
 function validCustomSettings() {
   // Provide a random try when receiving invalid values XD
   if (customSettings.width < 3 || customSettings.width > 100) {
@@ -89,10 +94,7 @@ function validCustomSettings() {
   if (customSettings.height < 3 || customSettings.height > 100) {
     customSettings.height = randomInt(3, 100);
   }
-  if (
-    customSettings.mines < 1 ||
-    customSettings.mines > customSettings.width * customSettings.height - 1
-  ) {
+  if (customSettings.mines < 1 || customSettings.mines > maxValidMines.value) {
     customSettings.mines = randomInt(
       1,
       customSettings.width * customSettings.height
@@ -141,7 +143,8 @@ function shouldFullScreenEffect() {
 
 watchEffect(shouldFullScreenEffect);
 
-// TODO: Provide play guide & operation instructions somewhere
+// TODO: Add a play guide and operation instructions section
+// TODO: Display a notification when scrolling is needed to view the entire board
 </script>
 
 <template>
@@ -175,29 +178,37 @@ watchEffect(shouldFullScreenEffect);
           class="control-button"
           :class="{ active: ms.difficulty === 'beginner' }"
           @click="ms.reset('beginner')"
+          data-first-char="初"
         >
           初级
+          <!-- <span>初级</span> -->
         </button>
         <button
           class="control-button"
           :class="{ active: ms.difficulty === 'intermediate' }"
           @click="ms.reset('intermediate')"
+          data-first-char="中"
         >
           中级
+          <!-- <span>中级</span> -->
         </button>
         <button
           class="control-button"
           :class="{ active: ms.difficulty === 'expert' }"
           @click="ms.reset('expert')"
+          data-first-char="高"
         >
           高级
+          <!-- <span>高级</span> -->
         </button>
         <button
           class="control-button"
           :class="{ active: ms.difficulty === 'custom' }"
           @click="onCustomizingSettings"
+          data-first-char="自"
         >
           自定义
+          <!-- <span>自定义</span> -->
         </button>
       </div>
       <div class="right-group">
@@ -210,21 +221,23 @@ watchEffect(shouldFullScreenEffect);
       <div class="custom-settings" :class="{ active: activeCustomSettings }">
         <form id="custom-form" class="custom-settings-form">
           <div class="custom-form-group">
-            <label for="width">宽度（3〜100）：</label>
+            <label for="custom-settings-width">宽度：</label>
             <input
               type="number"
-              id="width"
-              v-model="customSettings.width"
+              id="custom-settings-width"
+              placeholder="3 ~ 100"
               required
+              v-model.number.lazy="customSettings.width"
             />
           </div>
           <div class="custom-form-group">
-            <label for="height">高度（3〜100）：</label>
+            <label for="custom-settings-height">高度：</label>
             <input
               type="number"
-              id="height"
-              v-model="customSettings.height"
+              id="custom-settings-height"
+              placeholder="3 ~ 100"
               required
+              v-model.number.lazy="customSettings.height"
             />
           </div>
           <div class="custom-form-group">
@@ -233,7 +246,8 @@ watchEffect(shouldFullScreenEffect);
               type="number"
               id="mines"
               min="1"
-              v-model="customSettings.mines"
+              :placeholder="`1 ~ ${maxValidMines}`"
+              v-model.number.lazy="customSettings.mines"
               required
             />
           </div>
@@ -363,9 +377,6 @@ watchEffect(shouldFullScreenEffect);
     }
 
     .control-button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
       height: 36px;
       border: none;
       border-radius: 4px;
@@ -374,8 +385,12 @@ watchEffect(shouldFullScreenEffect);
       color: var(--color-button-text);
       font-weight: 500;
       cursor: pointer;
+      overflow: hidden;
+      line-height: 36px;
+      word-wrap: break-word;
+      interpolate-size: allow-keywords;
       transition:
-        all 0.2s ease,
+        all 0.3s ease,
         background-color 0.3s ease,
         color 0.3s ease;
 
@@ -386,6 +401,19 @@ watchEffect(shouldFullScreenEffect);
       &.active {
         background-color: var(--color-primary-dimmer);
         color: var(--counter-color-text);
+      }
+    }
+
+    @media screen and (max-width: 380px) {
+      .center-group > .control-button {
+        padding: 0 10px;
+        width: 36px;
+
+        &:hover,
+        &.active {
+          padding: 0 16px;
+          width: auto;
+        }
       }
     }
 
@@ -437,46 +465,47 @@ watchEffect(shouldFullScreenEffect);
 
       .custom-settings-form {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 15px;
         margin: 15px;
-      }
 
-      .custom-form-group {
-        display: flex;
-        flex-direction: column;
-      }
+        .custom-form-group {
+          display: flex;
+          flex-direction: column;
 
-      .custom-form-group label {
-        margin-bottom: 2px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: var(--counter-color-text);
-      }
+          label {
+            margin-bottom: 2px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--counter-color-text);
+          }
 
-      .custom-form-group input {
-        height: 34px;
-        padding: 0 8px;
-        border-radius: 4px;
-        border: 1px solid var(--input-color-border);
-        background-color: var(--input-color-bg);
-        color: var(--text);
-      }
+          input {
+            border-radius: 4px;
+            border: 1px solid var(--input-color-border);
+            width: 100%;
+            height: 34px;
+            padding: 0 8px;
+            background-color: var(--input-color-bg);
+            color: var(--text);
 
-      .custom-form-group input:focus {
-        outline: none;
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 2px var(--color-primary-brighter);
-      }
+            &:focus {
+              outline: none;
+              border-color: var(--color-primary);
+              box-shadow: 0 0 0 2px var(--color-primary-brighter);
+            }
+          }
+        }
 
-      .custom-form-actions {
-        display: flex;
-        justify-content: flex-end;
-        align-items: flex-end;
-        gap: 10px;
+        .custom-form-actions {
+          display: flex;
+          justify-content: flex-end;
+          align-items: flex-end;
+          gap: 10px;
 
-        .control-button {
-          height: 34px;
+          .control-button {
+            height: 34px;
+          }
         }
       }
     }
